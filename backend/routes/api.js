@@ -1,49 +1,51 @@
 import express from 'express';
-import db from '../database/db.js';
+import { pool, query } from '../database/db.js';
 import { pincodeData } from '../data/storeData.js';
 import { sendNewOrderEmailToOwner, sendContactQueryEmailToOwner, OWNER_EMAIL } from '../services/mailer.js';
 
 const router = express.Router();
 
-// Helper to parse JSON fields from SQLite product rows
+// Helper to parse JSON fields from product rows
 function formatProductRow(row) {
   if (!row) return null;
   return {
     ...row,
-    tags: row.tags ? JSON.parse(row.tags) : [],
-    sizes: row.sizes ? JSON.parse(row.sizes) : [],
-    colors: row.colors ? JSON.parse(row.colors) : [],
-    images: row.images ? JSON.parse(row.images) : [],
-    inStock: Boolean(row.inStock),
-    isNew: Boolean(row.isNew),
-    isBestseller: Boolean(row.isBestseller),
+    tags: typeof row.tags === 'string' ? JSON.parse(row.tags) : (row.tags || []),
+    sizes: typeof row.sizes === 'string' ? JSON.parse(row.sizes) : (row.sizes || []),
+    colors: typeof row.colors === 'string' ? JSON.parse(row.colors) : (row.colors || []),
+    images: typeof row.images === 'string' ? JSON.parse(row.images) : (row.images || []),
+    inStock: Boolean(row.instock ?? row.inStock),
+    isNew: Boolean(row.isnew ?? row.isNew),
+    isBestseller: Boolean(row.isbestseller ?? row.isBestseller),
+    reviewCount: row.reviewcount ?? row.reviewCount,
+    washCare: row.washcare ?? row.washCare,
   };
 }
 
-// 1. GET /api/products — Fetch products from SQLite DB
-router.get('/products', (req, res) => {
+// 1. GET /api/products — Fetch products from PostgreSQL DB
+router.get('/products', async (req, res) => {
   try {
-    const rows = db.prepare('SELECT * FROM products').all();
-    const formatted = rows.map(formatProductRow);
+    const result = await pool.query('SELECT * FROM products ORDER BY id ASC');
+    const formatted = result.rows.map(formatProductRow);
     res.json({ success: true, count: formatted.length, data: formatted });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }
 });
 
-// 2. GET /api/products/:id — Fetch single product from SQLite DB
-router.get('/products/:id', (req, res) => {
+// 2. GET /api/products/:id — Fetch single product from PostgreSQL DB
+router.get('/products/:id', async (req, res) => {
   try {
-    const row = db.prepare('SELECT * FROM products WHERE id = ?').get(req.params.id);
-    if (!row) return res.status(404).json({ success: false, message: 'Product not found' });
-    res.json({ success: true, data: formatProductRow(row) });
+    const result = await pool.query('SELECT * FROM products WHERE id = $1', [req.params.id]);
+    if (result.rows.length === 0) return res.status(404).json({ success: false, message: 'Product not found' });
+    res.json({ success: true, data: formatProductRow(result.rows[0]) });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }
 });
 
-// 2a. POST /api/products — Create a new product in SQLite DB (Admin CRUD)
-router.post('/products', (req, res) => {
+// 2a. POST /api/products — Create a new product in PostgreSQL DB (Admin CRUD)
+router.post('/products', async (req, res) => {
   const { name, category, price, mrp, discount, description, sizes, colors, tags, images, fabric, washCare, fit, inStock, isNew, isBestseller } = req.body;
 
   if (!name || !price || !category) {
@@ -56,12 +58,11 @@ router.post('/products', (req, res) => {
   const finalDiscount = discount !== undefined ? Number(discount) : (finalMrp > finalPrice ? Math.round(((finalMrp - finalPrice) / finalMrp) * 100) : 0);
 
   try {
-    const stmt = db.prepare(`
+    const result = await pool.query(`
       INSERT INTO products (name, slug, price, mrp, discount, category, tags, sizes, colors, images, rating, reviewCount, description, fabric, washCare, fit, inStock, isNew, isBestseller)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `);
-
-    const result = stmt.run(
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)
+      RETURNING *
+    `, [
       name,
       slug,
       finalPrice,
@@ -81,23 +82,23 @@ router.post('/products', (req, res) => {
       inStock !== undefined ? (inStock ? 1 : 0) : 1,
       isNew ? 1 : 0,
       isBestseller ? 1 : 0
-    );
+    ]);
 
-    const createdProduct = db.prepare('SELECT * FROM products WHERE id = ?').get(result.lastInsertRowid);
-    res.status(201).json({ success: true, message: 'Product created successfully!', data: formatProductRow(createdProduct) });
+    res.status(201).json({ success: true, message: 'Product created successfully!', data: formatProductRow(result.rows[0]) });
   } catch (err) {
     console.error('Error creating product:', err);
     res.status(500).json({ success: false, message: err.message });
   }
 });
 
-// 2b. PUT /api/products/:id — Update product in SQLite DB (Admin CRUD)
-router.put('/products/:id', (req, res) => {
+// 2b. PUT /api/products/:id — Update product in PostgreSQL DB (Admin CRUD)
+router.put('/products/:id', async (req, res) => {
   const { name, category, price, mrp, discount, description, sizes, colors, tags, images, fabric, washCare, fit, inStock, isNew, isBestseller } = req.body;
 
   try {
-    const existing = db.prepare('SELECT * FROM products WHERE id = ?').get(req.params.id);
-    if (!existing) return res.status(404).json({ success: false, message: 'Product not found' });
+    const existingResult = await pool.query('SELECT * FROM products WHERE id = $1', [req.params.id]);
+    if (existingResult.rows.length === 0) return res.status(404).json({ success: false, message: 'Product not found' });
+    const existing = existingResult.rows[0];
 
     const newName = name || existing.name;
     const newSlug = newName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
@@ -105,29 +106,28 @@ router.put('/products/:id', (req, res) => {
     const newMrp = mrp !== undefined ? Number(mrp) : existing.mrp;
     const newDiscount = discount !== undefined ? Number(discount) : (newMrp > newPrice ? Math.round(((newMrp - newPrice) / newMrp) * 100) : 0);
 
-    const stmt = db.prepare(`
+    const updateResult = await pool.query(`
       UPDATE products SET
-        name = ?,
-        slug = ?,
-        price = ?,
-        mrp = ?,
-        discount = ?,
-        category = ?,
-        tags = ?,
-        sizes = ?,
-        colors = ?,
-        images = ?,
-        description = ?,
-        fabric = ?,
-        washCare = ?,
-        fit = ?,
-        inStock = ?,
-        isNew = ?,
-        isBestseller = ?
-      WHERE id = ?
-    `);
-
-    stmt.run(
+        name = $1,
+        slug = $2,
+        price = $3,
+        mrp = $4,
+        discount = $5,
+        category = $6,
+        tags = $7,
+        sizes = $8,
+        colors = $9,
+        images = $10,
+        description = $11,
+        fabric = $12,
+        washCare = $13,
+        fit = $14,
+        inStock = $15,
+        isNew = $16,
+        isBestseller = $17
+      WHERE id = $18
+      RETURNING *
+    `, [
       newName,
       newSlug,
       newPrice,
@@ -142,26 +142,24 @@ router.put('/products/:id', (req, res) => {
       fabric || existing.fabric,
       washCare || existing.washCare,
       fit || existing.fit,
-      inStock !== undefined ? (inStock ? 1 : 0) : existing.inStock,
-      isNew !== undefined ? (isNew ? 1 : 0) : existing.isNew,
-      isBestseller !== undefined ? (isBestseller ? 1 : 0) : existing.isBestseller,
+      inStock !== undefined ? (inStock ? 1 : 0) : (existing.instock ?? existing.inStock),
+      isNew !== undefined ? (isNew ? 1 : 0) : (existing.isnew ?? existing.isNew),
+      isBestseller !== undefined ? (isBestseller ? 1 : 0) : (existing.isbestseller ?? existing.isBestseller),
       req.params.id
-    );
+    ]);
 
-    const updatedRow = db.prepare('SELECT * FROM products WHERE id = ?').get(req.params.id);
-    res.json({ success: true, message: 'Product updated successfully!', data: formatProductRow(updatedRow) });
+    res.json({ success: true, message: 'Product updated successfully!', data: formatProductRow(updateResult.rows[0]) });
   } catch (err) {
     console.error('Error updating product:', err);
     res.status(500).json({ success: false, message: err.message });
   }
 });
 
-// 2c. DELETE /api/products/:id — Delete product from SQLite DB (Admin CRUD)
-router.delete('/products/:id', (req, res) => {
+// 2c. DELETE /api/products/:id — Delete product from PostgreSQL DB (Admin CRUD)
+router.delete('/products/:id', async (req, res) => {
   try {
-    const stmt = db.prepare('DELETE FROM products WHERE id = ?');
-    const result = stmt.run(req.params.id);
-    if (result.changes === 0) {
+    const result = await pool.query('DELETE FROM products WHERE id = $1', [req.params.id]);
+    if (result.rowCount === 0) {
       return res.status(404).json({ success: false, message: 'Product not found' });
     }
     res.json({ success: true, message: `Product #${req.params.id} deleted successfully!` });
@@ -170,7 +168,7 @@ router.delete('/products/:id', (req, res) => {
   }
 });
 
-// 3. POST /api/orders — Save order in SQLite DB & Dispatch email notification to teenesttt@gmail.com
+// 3. POST /api/orders — Save order in PostgreSQL DB & Dispatch email notification
 router.post('/orders', async (req, res) => {
   const { items, shipping, deliveryOption, paymentMethod, total, paymentScreenshot } = req.body;
 
@@ -183,12 +181,10 @@ router.post('/orders', async (req, res) => {
   const itemsJson = JSON.stringify(items || []);
 
   try {
-    const insertOrder = db.prepare(`
+    await pool.query(`
       INSERT INTO orders (orderId, date, customerName, customerPhone, customerEmail, address, city, state, pincode, deliveryOption, paymentMethod, total, status, itemsJson, paymentScreenshot)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `);
-
-    insertOrder.run(
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
+    `, [
       orderId,
       date,
       shipping.name,
@@ -204,7 +200,7 @@ router.post('/orders', async (req, res) => {
       'confirmed',
       itemsJson,
       paymentScreenshot || null
-    );
+    ]);
 
     const newOrder = {
       orderId,
@@ -223,16 +219,59 @@ router.post('/orders', async (req, res) => {
 
     res.status(201).json({
       success: true,
-      message: `Order saved in SQLite DB & Email alert dispatched to ${OWNER_EMAIL}`,
+      message: `Order saved in PostgreSQL DB & Email alert dispatched to ${OWNER_EMAIL}`,
       order: newOrder,
     });
   } catch (err) {
-    console.error('Error inserting order into SQLite:', err);
+    console.error('Error inserting order into PostgreSQL:', err);
     res.status(500).json({ success: false, message: err.message });
   }
 });
 
-// 6. POST /api/contact — Handle Contact Us Form Submissions, Save to SQLite, & Email Store Owner
+// 4. GET /api/orders — Fetch orders from PostgreSQL DB (Admin Only)
+router.get('/orders', async (req, res) => {
+  try {
+    const result = await pool.query('SELECT * FROM orders ORDER BY id DESC');
+    const formatted = result.rows.map((r) => ({
+      orderId: r.orderid || r.orderId,
+      date: r.date,
+      total: r.total,
+      paymentMethod: r.paymentmethod || r.paymentMethod,
+      deliveryOption: r.deliveryoption || r.deliveryOption,
+      status: r.status,
+      paymentScreenshot: r.paymentscreenshot || r.paymentScreenshot || null,
+      shipping: {
+        name: r.customername || r.customerName,
+        phone: r.customerphone || r.customerPhone,
+        email: r.customeremail || r.customerEmail,
+        address: r.address,
+        city: r.city,
+        state: r.state,
+        pincode: r.pincode,
+      },
+      items: (r.itemsjson || r.itemsJson) ? JSON.parse(r.itemsjson || r.itemsJson) : [],
+    }));
+    res.json({ success: true, count: formatted.length, data: formatted });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+// 5. PATCH /api/orders/:id/status — Update order status in PostgreSQL DB
+router.patch('/orders/:id/status', async (req, res) => {
+  const { status } = req.body;
+  try {
+    const result = await pool.query('UPDATE orders SET status = $1 WHERE orderId = $2', [status, req.params.id]);
+    if (result.rowCount === 0) {
+      return res.status(404).json({ success: false, message: 'Order not found' });
+    }
+    res.json({ success: true, message: `Order ${req.params.id} updated to ${status}` });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+// 6. POST /api/contact — Handle Contact Us Form Submissions
 router.post('/contact', async (req, res) => {
   const { name, email, phone, subject, message } = req.body;
 
@@ -254,14 +293,11 @@ router.post('/contact', async (req, res) => {
   };
 
   try {
-    // Insert into SQLite database
-    const stmt = db.prepare(`
+    await pool.query(`
       INSERT INTO contact_queries (id, date, name, email, phone, subject, message, status)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-    `);
-    stmt.run(query.id, query.date, query.name, query.email, query.phone, query.subject, query.message, query.status);
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+    `, [query.id, query.date, query.name, query.email, query.phone, query.subject, query.message, query.status]);
 
-    // Send instant email notification to store owner (teenesttt@gmail.com)
     await sendContactQueryEmailToOwner(query);
     res.json({ success: true, message: 'Contact query submitted, saved, and emailed!', data: query });
   } catch (err) {
@@ -270,23 +306,22 @@ router.post('/contact', async (req, res) => {
   }
 });
 
-// 6a. GET /api/contact — Fetch all contact queries from SQLite DB
-router.get('/contact', (req, res) => {
+// 6a. GET /api/contact — Fetch all contact queries from PostgreSQL DB
+router.get('/contact', async (req, res) => {
   try {
-    const rows = db.prepare('SELECT * FROM contact_queries ORDER BY date DESC').all();
-    res.json({ success: true, count: rows.length, data: rows });
+    const result = await pool.query('SELECT * FROM contact_queries ORDER BY date DESC');
+    res.json({ success: true, count: result.rows.length, data: result.rows });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }
 });
 
-// 6b. PATCH /api/contact/:id/status — Update contact query status in SQLite DB
-router.patch('/contact/:id/status', (req, res) => {
+// 6b. PATCH /api/contact/:id/status — Update contact query status in PostgreSQL DB
+router.patch('/contact/:id/status', async (req, res) => {
   const { status } = req.body;
   try {
-    const stmt = db.prepare('UPDATE contact_queries SET status = ? WHERE id = ?');
-    const result = stmt.run(status, req.params.id);
-    if (result.changes === 0) {
+    const result = await pool.query('UPDATE contact_queries SET status = $1 WHERE id = $2', [status, req.params.id]);
+    if (result.rowCount === 0) {
       return res.status(404).json({ success: false, message: 'Query not found' });
     }
     res.json({ success: true, message: `Query status updated to ${status}` });
@@ -295,12 +330,11 @@ router.patch('/contact/:id/status', (req, res) => {
   }
 });
 
-// 6c. DELETE /api/contact/:id — Delete contact query from SQLite DB
-router.delete('/contact/:id', (req, res) => {
+// 6c. DELETE /api/contact/:id — Delete contact query from PostgreSQL DB
+router.delete('/contact/:id', async (req, res) => {
   try {
-    const stmt = db.prepare('DELETE FROM contact_queries WHERE id = ?');
-    const result = stmt.run(req.params.id);
-    if (result.changes === 0) {
+    const result = await pool.query('DELETE FROM contact_queries WHERE id = $1', [req.params.id]);
+    if (result.rowCount === 0) {
       return res.status(404).json({ success: false, message: 'Query not found' });
     }
     res.json({ success: true, message: `Query #${req.params.id} deleted successfully!` });
@@ -309,51 +343,7 @@ router.delete('/contact/:id', (req, res) => {
   }
 });
 
-// 4. GET /api/orders — Fetch orders from SQLite DB (Admin Only)
-router.get('/orders', (req, res) => {
-  try {
-    const rows = db.prepare('SELECT * FROM orders ORDER BY id DESC').all();
-    const formatted = rows.map((r) => ({
-      orderId: r.orderId,
-      date: r.date,
-      total: r.total,
-      paymentMethod: r.paymentMethod,
-      deliveryOption: r.deliveryOption,
-      status: r.status,
-      paymentScreenshot: r.paymentScreenshot || null,
-      shipping: {
-        name: r.customerName,
-        phone: r.customerPhone,
-        email: r.customerEmail,
-        address: r.address,
-        city: r.city,
-        state: r.state,
-        pincode: r.pincode,
-      },
-      items: r.itemsJson ? JSON.parse(r.itemsJson) : [],
-    }));
-    res.json({ success: true, count: formatted.length, data: formatted });
-  } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
-  }
-});
-
-// 5. PATCH /api/orders/:id/status — Update order status in SQLite DB
-router.patch('/orders/:id/status', (req, res) => {
-  const { status } = req.body;
-  try {
-    const stmt = db.prepare('UPDATE orders SET status = ? WHERE orderId = ?');
-    const result = stmt.run(status, req.params.id);
-    if (result.changes === 0) {
-      return res.status(404).json({ success: false, message: 'Order not found' });
-    }
-    res.json({ success: true, message: `Order ${req.params.id} updated to ${status}` });
-  } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
-  }
-});
-
-// 6. Admin Owner Login
+// 7. Admin Owner Login
 router.post('/admin/login', (req, res) => {
   const { email, password } = req.body;
   const validIdentifiers = [OWNER_EMAIL.toLowerCase(), 'admin@teeverse.in', 'admin'];
@@ -372,7 +362,7 @@ router.post('/admin/login', (req, res) => {
   });
 });
 
-// 7. Pincode Lookup
+// 8. Pincode Lookup
 router.get('/pincode/:code', (req, res) => {
   const prefix = req.params.code.substring(0, 3);
   const found = pincodeData[prefix];

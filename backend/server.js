@@ -9,9 +9,6 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Initialize SQLite Database Schema & Initial Data
-initDatabase();
-
 // Middleware
 app.use(cors());
 app.use(express.json({ limit: '50mb' }));
@@ -24,13 +21,13 @@ app.use('/api', apiRoutes);
 app.get('/', (req, res) => {
   res.json({
     status: 'online',
-    app: 'TeeVerse Node.js Express API Server (SQLite Database Powered)',
-    version: '1.0.0',
+    app: 'TeeVerse Node.js Express API Server (PostgreSQL Database Powered)',
+    version: '1.1.0',
     ownerEmail: 'teenesttt@gmail.com',
-    database: 'SQLite (server/database/teeverse.db)',
+    database: process.env.DATABASE_URL ? 'PostgreSQL (Cloud Active)' : 'PostgreSQL (Local / Config Pending)',
     endpoints: {
       products: 'GET /api/products',
-      createOrder: 'POST /api/orders (Saves to SQLite & emails teenesttt@gmail.com)',
+      createOrder: 'POST /api/orders (Saves to PostgreSQL & emails teenesttt@gmail.com)',
       orders: 'GET /api/orders',
       adminLogin: 'POST /api/admin/login',
     },
@@ -38,8 +35,10 @@ app.get('/', (req, res) => {
 });
 
 // Start Node.js Express Server
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
   console.log(`\n🚀 TeeVerse Node.js Express Server running on http://localhost:${PORT}`);
-  console.log(`🗄️ SQLite Database Active: server/database/teeverse.db`);
-  console.log(`📧 Order notifications target email: teenesttt@gmail.com\n`);
+  console.log(`📧 Order notifications target email: teenesttt@gmail.com`);
+
+  // Initialize PostgreSQL Database Schema & Seed Data
+  await initDatabase();
 });
