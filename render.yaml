@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: teeverse-api
+    env: node
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: node server.js
+    envVars:
+      - key: PORT
+        value: 5000
+      - key: DATABASE_URL
+        value: postgresql://neondb_owner:npg_0gqGbdmZFC4s@ep-odd-frost-avwfzi7f-pooler.c-11.us-east-1.aws.neon.tech/neondb?sslmode=require
+      - key: SMTP_USER
+        value: teenesttt@gmail.com
+      - key: SMTP_PASS
+        value: pcfhdrjxbzkmueix

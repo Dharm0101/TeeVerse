@@ -37,7 +37,7 @@ export const Navbar = () => {
         <div
           className="navbar__logo"
           onClick={() => navigateTo('home')}
-          style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', marginRight: '24px', flexShrink: 0 }}
+          style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}
         >
           <span style={{ fontSize: '1.4rem', fontWeight: 900, letterSpacing: '0.15em', fontFamily: 'var(--font-display)', background: 'linear-gradient(135deg, #FFFFFF 0%, #CDFF00 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', whiteSpace: 'nowrap' }}>
             TEEVERSE
@@ -120,7 +120,7 @@ export const Navbar = () => {
         </ul>
 
         {/* Action Icons */}
-        <div className="flex items-center gap-3" style={{ flexShrink: 0, whiteSpace: 'nowrap' }}>
+        <div className="navbar-action-icons flex items-center gap-3" style={{ flexShrink: 0, whiteSpace: 'nowrap' }}>
           <button className="nav-icon" onClick={() => setIsSearchOpen(true)} aria-label="Search" title="Search tees">
             <Search size={20} />
           </button>
@@ -129,36 +129,27 @@ export const Navbar = () => {
             <button
               className="btn btn-primary btn-sm hover-shine navbar-login-btn"
               onClick={() => setIsAuthModalOpen(true)}
-              style={{
-                fontSize: '0.78rem',
-                padding: '6px 14px',
-                borderRadius: '20px',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px',
-                fontWeight: '700',
-                letterSpacing: '0.05em',
-              }}
+              aria-label="Login"
+              title="Login"
             >
-              <User size={15} />
-              <span>LOGIN</span>
+              <User size={16} />
+              <span className="navbar-login-text">LOGIN</span>
             </button>
           ) : (
             <button
-              className="nav-icon"
+              className="nav-icon navbar-user-btn"
               onClick={() => navigateTo('profile')}
               aria-label="Profile"
               title={`Account: ${customerUser.name}`}
-              style={{ padding: '4px 12px', borderRadius: '20px', gap: '6px', background: 'rgba(205, 255, 0, 0.1)', border: '1px solid rgba(205, 255, 0, 0.3)' }}
             >
               <User size={16} color="var(--accent-primary)" />
-              <span style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--accent-primary)', maxWidth: '90px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              <span className="navbar-login-text">
                 {customerUser.name}
               </span>
             </button>
           )}
 
-          <button className="nav-icon" onClick={() => setIsWishlistOpen(true)} aria-label="Wishlist">
+          <button className="nav-icon" onClick={() => setIsWishlistOpen(true)} aria-label="Wishlist" title="Wishlist">
             <Heart size={20} />
             {wishlist.length > 0 && (
               <span className="nav-icon__badge">{wishlist.length}</span>
@@ -166,7 +157,7 @@ export const Navbar = () => {
           </button>
 
           {!isAdminLoggedIn && currentPage !== 'admin' && currentPage !== 'admin-login' && (
-            <button className="nav-icon" onClick={() => setIsCartOpen(true)} aria-label="Cart">
+            <button className="nav-icon navbar-cart-btn" onClick={() => setIsCartOpen(true)} aria-label="Cart" title="Shopping Cart">
               <ShoppingBag size={20} />
               {totalCartCount > 0 && (
                 <span className="nav-icon__badge">{totalCartCount}</span>

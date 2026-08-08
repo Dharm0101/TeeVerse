@@ -26,9 +26,13 @@ export const MobileNav = () => {
     isAdminLoggedIn,
     customerUser,
     setIsAuthModalOpen,
+    setIsCartOpen,
+    cartItems,
   } = useStore();
 
   if (!isMobileNavOpen) return null;
+
+  const totalCartCount = cartItems.reduce((acc, item) => acc + item.quantity, 0);
 
   const handleNav = (page, category = null) => {
     if (category) {
@@ -39,15 +43,26 @@ export const MobileNav = () => {
   };
 
   const navItems = [
-    { label: 'Home', page: 'home', category: null, icon: Home, badge: null },
-    { label: 'Shop All Collection', page: 'shop', category: 'all', icon: ShoppingBag, badge: 'HOT' },
-    { label: 'Graphic Tees', page: 'shop', category: 'graphic', icon: Sparkles, badge: null },
-    { label: 'Oversized Fits', page: 'shop', category: 'oversized', icon: Flame, badge: 'POPULAR' },
-    { label: 'Plain & Heavyweight', page: 'shop', category: 'plain', icon: Shirt, badge: null },
-    { label: 'Anime Collection', page: 'shop', category: 'anime', icon: Tv, badge: null },
-    { label: 'Typography Drops', page: 'shop', category: 'typography', icon: Type, badge: null },
-    { label: 'About Us', page: 'about', category: null, icon: Info, badge: null },
-    { label: 'Contact & Support', page: 'contact', category: null, icon: Headphones, badge: null },
+    { label: 'Home', page: 'home', category: null, icon: Home, badge: null, action: null },
+    {
+      label: `Shopping Cart (${totalCartCount})`,
+      page: null,
+      category: null,
+      icon: ShoppingBag,
+      badge: totalCartCount > 0 ? `${totalCartCount} ITEMS` : null,
+      action: () => {
+        setIsMobileNavOpen(false);
+        setIsCartOpen(true);
+      },
+    },
+    { label: 'Shop All Collection', page: 'shop', category: 'all', icon: Sparkles, badge: 'HOT', action: null },
+    { label: 'Graphic Tees', page: 'shop', category: 'graphic', icon: Sparkles, badge: null, action: null },
+    { label: 'Oversized Fits', page: 'shop', category: 'oversized', icon: Flame, badge: 'POPULAR', action: null },
+    { label: 'Plain & Heavyweight', page: 'shop', category: 'plain', icon: Shirt, badge: null, action: null },
+    { label: 'Anime Collection', page: 'shop', category: 'anime', icon: Tv, badge: null, action: null },
+    { label: 'Typography Drops', page: 'shop', category: 'typography', icon: Type, badge: null, action: null },
+    { label: 'About Us', page: 'about', category: null, icon: Info, badge: null, action: null },
+    { label: 'Contact & Support', page: 'contact', category: null, icon: Headphones, badge: null, action: null },
   ];
 
   return (
@@ -95,7 +110,7 @@ export const MobileNav = () => {
                   key={idx}
                   className="mobile-nav-item"
                   style={{ animationDelay: `${idx * 0.035}s` }}
-                  onClick={() => handleNav(item.page, item.category)}
+                  onClick={() => (item.action ? item.action() : handleNav(item.page, item.category))}
                 >
                   <div className="flex items-center gap-3">
                     <div className="mobile-nav-icon">
