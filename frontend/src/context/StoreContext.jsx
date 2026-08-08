@@ -519,9 +519,22 @@ export const StoreProvider = ({ children }) => {
 
   // Customer Auth
   const customerLogin = (email, password) => {
-    const user = { name: email.split('@')[0] || 'User', email, phone: '9876543210' };
+    const name = email.split('@')[0] || 'Customer';
+    const user = { name, email, phone: '' };
     setCustomerUser(user);
-    showToast(`Welcome back, ${user.name}! 🔥`, 'success');
+
+    // Automatically register customer into Admin Customer Database
+    const key = email.toLowerCase().trim();
+    saveAdminCustomer(key, {
+      key,
+      name,
+      email: email.toLowerCase().trim(),
+      phone: '',
+      status: 'Active',
+      lastOrderDate: new Date().toISOString(),
+    });
+
+    showToast(`Welcome back, ${name}! 🔥`, 'success');
     setIsAuthModalOpen(false);
   };
 
