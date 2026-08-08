@@ -94,25 +94,6 @@ export const AdminDashboardView = () => {
     });
   }
 
-  // Initial seed customer if empty
-  if (Object.keys(customerMap).length === 0) {
-    customerMap['c-default'] = {
-      key: 'c-default',
-      name: 'Aarav Patel',
-      phone: '9558613440',
-      email: 'aarav.patel@gmail.com',
-      address: 'Near CG Road, Navrangpura',
-      city: 'Ahmedabad',
-      state: 'Gujarat',
-      pincode: '380009',
-      totalOrders: 2,
-      totalSpent: 1798,
-      status: 'VIP',
-      lastOrderDate: new Date().toISOString(),
-      notes: 'Loves oversized 240 GSM drop shoulder tees',
-    };
-  }
-
   const allCustomers = Object.values(customerMap);
 
   const filteredCustomers = allCustomers.filter((c) => {
