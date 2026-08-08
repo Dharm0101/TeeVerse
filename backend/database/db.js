@@ -1,9 +1,12 @@
 import pkg from 'pg';
 const { Pool } = pkg;
+import dotenv from 'dotenv';
 import { products } from '../data/storeData.js';
 
+dotenv.config();
+
 // Setup PostgreSQL pool with SSL option (required for Render / Supabase / Neon / Cloud Postgres)
-const connectionString = process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/teeverse';
+const connectionString = process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/neondb';
 
 const isProduction = process.env.NODE_ENV === 'production' || !!process.env.DATABASE_URL;
 
