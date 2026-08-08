@@ -922,15 +922,12 @@ h6 {
   gap: 32px;
 }
 
-@media (max-width: 1024px) {
-  .product-grid {
-    grid-template-columns: repeat(3, 1fr);
-    gap: 16px;
+@media (max-width: 1180px) {
+  .navbar__links {
+    display: none !important;
   }
-
-  .checkout-layout-grid {
-    grid-template-columns: 1fr;
-    gap: 24px;
+  .mobile-hamburger {
+    display: flex !important;
   }
 }
 

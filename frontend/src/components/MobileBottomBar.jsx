@@ -17,8 +17,8 @@ export const MobileBottomBar = () => {
 
   const totalCartCount = cartItems.reduce((acc, item) => acc + item.quantity, 0);
 
-  // Hide on admin routes
-  if (isAdminLoggedIn || currentPage === 'admin' || currentPage === 'admin-login') {
+  // Hide only on admin portal dashboard pages
+  if (currentPage === 'admin' || currentPage === 'admin-login') {
     return null;
   }
 

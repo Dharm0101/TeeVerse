@@ -156,14 +156,12 @@ export const Navbar = () => {
             )}
           </button>
 
-          {!isAdminLoggedIn && currentPage !== 'admin' && currentPage !== 'admin-login' && (
-            <button className="nav-icon navbar-cart-btn" onClick={() => setIsCartOpen(true)} aria-label="Cart" title="Shopping Cart">
-              <ShoppingBag size={20} />
-              {totalCartCount > 0 && (
-                <span className="nav-icon__badge">{totalCartCount}</span>
-              )}
-            </button>
-          )}
+          <button className="nav-icon navbar-cart-btn" onClick={() => setIsCartOpen(true)} aria-label="Cart" title="Shopping Cart">
+            <ShoppingBag size={20} />
+            {totalCartCount > 0 && (
+              <span className="nav-icon__badge">{totalCartCount}</span>
+            )}
+          </button>
         </div>
       </div>
     </nav>
