@@ -120,16 +120,51 @@ export const Navbar = () => {
         </ul>
 
         {/* Action Icons */}
-        <div className="flex items-center gap-3">
-          <button className="nav-icon" onClick={() => setIsSearchOpen(true)} aria-label="Search">
+        <div className="flex items-center gap-2">
+          <button className="nav-icon" onClick={() => setIsSearchOpen(true)} aria-label="Search" title="Search tees">
             <Search size={20} />
           </button>
+
+          {!customerUser ? (
+            <button
+              className="btn btn-primary btn-sm hover-shine navbar-login-btn"
+              onClick={() => setIsAuthModalOpen(true)}
+              style={{
+                fontSize: '0.78rem',
+                padding: '6px 14px',
+                borderRadius: '20px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                fontWeight: '700',
+                letterSpacing: '0.05em',
+              }}
+            >
+              <User size={15} />
+              <span>LOGIN</span>
+            </button>
+          ) : (
+            <button
+              className="nav-icon"
+              onClick={() => navigateTo('profile')}
+              aria-label="Profile"
+              title={`Account: ${customerUser.name}`}
+              style={{ padding: '4px 12px', borderRadius: '20px', gap: '6px', background: 'rgba(205, 255, 0, 0.1)', border: '1px solid rgba(205, 255, 0, 0.3)' }}
+            >
+              <User size={16} color="var(--accent-primary)" />
+              <span style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--accent-primary)', maxWidth: '90px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                {customerUser.name}
+              </span>
+            </button>
+          )}
+
           <button className="nav-icon" onClick={() => setIsWishlistOpen(true)} aria-label="Wishlist">
             <Heart size={20} />
             {wishlist.length > 0 && (
               <span className="nav-icon__badge">{wishlist.length}</span>
             )}
           </button>
+
           {!isAdminLoggedIn && currentPage !== 'admin' && currentPage !== 'admin-login' && (
             <button className="nav-icon" onClick={() => setIsCartOpen(true)} aria-label="Cart">
               <ShoppingBag size={20} />
@@ -138,19 +173,6 @@ export const Navbar = () => {
               )}
             </button>
           )}
-          <button
-            className="nav-icon"
-            onClick={() => {
-              if (customerUser) {
-                navigateTo('profile');
-              } else {
-                setIsAuthModalOpen(true);
-              }
-            }}
-            aria-label="Account"
-          >
-            <User size={20} />
-          </button>
         </div>
       </div>
     </nav>
