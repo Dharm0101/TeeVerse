@@ -212,32 +212,7 @@ export const StoreProvider = ({ children }) => {
         return [];
       }
     }
-    return [
-      {
-        id: 'addr-1',
-        tag: 'Home 🏠',
-        name: 'Rahul Sharma',
-        phone: '9558613440',
-        email: 'rahul.sharma@gmail.com',
-        address: '402 Sunset Heights, Near CG Road, Navrangpura',
-        city: 'Ahmedabad',
-        state: 'Gujarat',
-        pincode: '380009',
-        isDefault: true,
-      },
-      {
-        id: 'addr-2',
-        tag: 'Work 💼',
-        name: 'Rahul Sharma (Office)',
-        phone: '9812345678',
-        email: 'rahul.office@teeverse.in',
-        address: 'Tower B, 7th Floor, Cyber City, Bandra Kurla Complex',
-        city: 'Mumbai',
-        state: 'Maharashtra',
-        pincode: '400051',
-        isDefault: false,
-      },
-    ];
+    return [];
   });
 
   useEffect(() => {
