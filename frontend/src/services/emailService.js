@@ -1,10 +1,10 @@
 /**
  * TeeVerse — Email Notification & Node.js API Service
- * Connects React Frontend to Node.js / Express Backend (http://localhost:5000/api)
+ * Connects React Frontend to the deployed Node.js / Express backend.
  */
 
-export const API_HOST = typeof window !== 'undefined' ? window.location.hostname : 'localhost';
-export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || `http://${API_HOST}:5000/api`;
+const DEFAULT_API_BASE_URL = 'https://teeverse-r1gx.onrender.com/api';
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || DEFAULT_API_BASE_URL;
 
 export const emailService = {
   OWNER_EMAIL: 'teenesttt@gmail.com',

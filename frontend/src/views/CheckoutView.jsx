@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useStore } from '../context/StoreContext';
 import { indianStates, pincodeData } from '../data/mockData';
-import { emailService } from '../services/emailService';
+import { API_BASE_URL, emailService } from '../services/emailService';
 import { CheckCircle2, ShieldCheck, Truck, CreditCard, QrCode, Mail, Clock, RefreshCw, Copy, Check, Plus, MapPin } from 'lucide-react';
 
 const STORE_UPI_ID = localStorage.getItem('teeverse_store_upi_id') || '9558613440@paytm';
@@ -215,7 +215,7 @@ export const CheckoutView = () => {
 
     try {
       // Save order to backend SQLite database
-      const response = await fetch('/api/orders', {
+      const response = await fetch(`${API_BASE_URL}/orders`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newOrder),
