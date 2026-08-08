@@ -1,0 +1,272 @@
+/* Dynamic Streetwear Motion & Animations Design System */
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(35px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-25px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInRight {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+@keyframes slideOutRight {
+  from { transform: translateX(0); }
+  to { transform: translateX(100%); }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes glitch {
+  0% { transform: translate(0); text-shadow: 2px 2px #FF2D2D, -2px -2px #CDFF00; }
+  25% { transform: translate(-2px, 2px); text-shadow: -2px -2px #FF2D2D, 2px 2px #CDFF00; }
+  50% { transform: translate(2px, -1px); text-shadow: 2px -2px #FF2D2D, -2px 2px #CDFF00; }
+  75% { transform: translate(-1px, -2px); text-shadow: -2px 2px #FF2D2D, 2px -2px #CDFF00; }
+  100% { transform: translate(0); text-shadow: 2px 2px #FF2D2D, -2px -2px #CDFF00; }
+}
+
+@keyframes neonGlow {
+  0%, 100% {
+    box-shadow: 0 0 15px rgba(205, 255, 0, 0.3), 0 0 30px rgba(205, 255, 0, 0.15);
+  }
+  50% {
+    box-shadow: 0 0 25px rgba(205, 255, 0, 0.6), 0 0 45px rgba(205, 255, 0, 0.3);
+  }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-10px) rotate(0.5deg); }
+}
+
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+@keyframes heartBeat {
+  0% { transform: scale(1); }
+  20% { transform: scale(1.35); }
+  40% { transform: scale(1); }
+  60% { transform: scale(1.25); }
+  100% { transform: scale(1); }
+}
+
+@keyframes shine {
+  0% { left: -100%; }
+  100% { left: 200%; }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-6px); }
+  40%, 80% { transform: translateX(6px); }
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes badgePulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.08); opacity: 0.9; }
+}
+
+/* Motion & Animation Helper Classes */
+.animate-fadeIn { animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+.animate-fadeInUp { animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+.animate-fadeInDown { animation: fadeInDown 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+.animate-scaleIn { animation: scaleIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+.animate-shake { animation: shake 0.4s ease; }
+.animate-neonGlow { animation: neonGlow 2.5s infinite; }
+.animate-float { animation: float 4s ease-in-out infinite; }
+.animate-spin { animation: spin 1s linear infinite; }
+.animate-badgePulse { animation: badgePulse 2s ease-in-out infinite; }
+
+/* Stagger Animation Delays for Grids */
+.stagger-1 { animation-delay: 0.05s; }
+.stagger-2 { animation-delay: 0.1s; }
+.stagger-3 { animation-delay: 0.15s; }
+.stagger-4 { animation-delay: 0.2s; }
+.stagger-5 { animation-delay: 0.25s; }
+.stagger-6 { animation-delay: 0.3s; }
+
+/* Premium Card Hover Motion */
+.product-card {
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.product-card:hover {
+  transform: translateY(-8px) scale(1.015);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.8), 0 0 25px rgba(205, 255, 0, 0.18);
+  border-color: rgba(205, 255, 0, 0.4) !important;
+}
+
+/* Image Zoom Effect */
+.product-card .card-img-placeholder {
+  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1), filter 0.4s ease;
+}
+
+.product-card:hover .card-img-placeholder {
+  transform: scale(1.08);
+  filter: brightness(1.1);
+}
+
+/* Glassmorphism Shine Overlay */
+.hover-shine {
+  position: relative;
+  overflow: hidden;
+}
+
+.hover-shine::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.15),
+    transparent
+  );
+  transform: skewX(-25deg);
+  transition: left 0.75s ease;
+  pointer-events: none;
+}
+
+.hover-shine:hover::after {
+  left: 200%;
+}
+
+/* Interactive Magnetic Button Hover Motion */
+.btn {
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+              background-color 0.2s ease,
+              border-color 0.2s ease;
+}
+
+.btn-primary:hover {
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 10px 25px rgba(205, 255, 0, 0.4);
+}
+
+.btn-secondary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(255, 255, 255, 0.1);
+  border-color: var(--accent-primary) !important;
+  color: var(--accent-primary) !important;
+}
+
+.btn:active {
+  transform: translateY(0) scale(0.98);
+}
+
+/* Ticker Marquee Bar */
+.marquee-track {
+  display: flex;
+  white-space: nowrap;
+  animation: marquee 22s linear infinite;
+  width: max-content;
+}
+
+.marquee-track:hover {
+  animation-play-state: paused;
+}
+
+/* Glitch Heading Text Effect */
+.glitch-hover:hover {
+  animation: glitch 0.3s ease infinite;
+}
+
+/* Scroll Driven Reveal Animations */
+.scroll-reveal {
+  opacity: 0;
+  transform: translateY(40px);
+  transition: opacity 0.75s cubic-bezier(0.16, 1, 0.3, 1), transform 0.75s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+}
+
+.scroll-reveal.revealed {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.scroll-reveal-left {
+  opacity: 0;
+  transform: translateX(-60px);
+  transition: opacity 0.75s cubic-bezier(0.16, 1, 0.3, 1), transform 0.75s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+}
+
+.scroll-reveal-left.revealed {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.scroll-reveal-right {
+  opacity: 0;
+  transform: translateX(60px);
+  transition: opacity 0.75s cubic-bezier(0.16, 1, 0.3, 1), transform 0.75s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+}
+
+.scroll-reveal-right.revealed {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.scroll-reveal-scale {
+  opacity: 0;
+  transform: scale(0.9);
+  transition: opacity 0.75s cubic-bezier(0.16, 1, 0.3, 1), transform 0.75s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+}
+
+.scroll-reveal-scale.revealed {
+  opacity: 1;
+  transform: scale(1);
+}
