@@ -37,10 +37,13 @@ export const Navbar = () => {
         <div
           className="navbar__logo"
           onClick={() => navigateTo('home')}
-          style={{ cursor: 'pointer' }}
+          style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}
         >
-          <span className="glitch" data-text="TEEVERSE">
+          <span style={{ fontSize: '1.4rem', fontWeight: 900, letterSpacing: '0.15em', fontFamily: 'var(--font-display)', background: 'linear-gradient(135deg, #FFFFFF 0%, #CDFF00 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
             TEEVERSE
+          </span>
+          <span style={{ fontSize: '0.62rem', fontWeight: 700, padding: '2px 6px', borderRadius: '4px', background: 'rgba(205, 255, 0, 0.12)', color: 'var(--accent-primary)', border: '1px solid rgba(205, 255, 0, 0.3)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+            STREETWEAR
           </span>
         </div>
 

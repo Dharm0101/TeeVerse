@@ -24,7 +24,23 @@ import { SearchOverlay } from './components/SearchOverlay';
 import { ToastContainer } from './components/ToastContainer';
 
 const MainContent = () => {
-  const { currentPage } = useStore();
+  const { currentPage, selectedProduct } = useStore();
+
+  React.useEffect(() => {
+    const pageTitles = {
+      home: 'TEEVERSE • Heavyweight Streetwear & Graphic Tees',
+      shop: 'Shop All Streetwear Tees | TEEVERSE',
+      product: selectedProduct ? `${selectedProduct.name} | TEEVERSE Streetwear` : 'Product Details | TEEVERSE',
+      checkout: 'Checkout & Secure Payment | TEEVERSE',
+      profile: 'My Account & Orders | TEEVERSE',
+      tracking: 'Track Your Order | TEEVERSE',
+      'admin-login': 'Admin Owner Portal | TEEVERSE',
+      admin: 'Store Admin Dashboard | TEEVERSE',
+      contact: 'Contact Us | TEEVERSE',
+      about: 'Our Brand & Heavyweight Fabric | TEEVERSE',
+    };
+    document.title = pageTitles[currentPage] || 'TEEVERSE • Heavyweight Streetwear';
+  }, [currentPage, selectedProduct]);
 
   React.useEffect(() => {
     const handleScrollObserve = () => {

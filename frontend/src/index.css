@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Oswald:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Oswald:wght@400;500;600;700&family=Outfit:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@500;600;700&family=Syne:wght@700;800&display=swap');
 @import './animations.css';
 
 :root {
@@ -16,8 +16,9 @@
   --warning: #FFD600;
   --info: #29B6F6;
 
-  --font-heading: 'Oswald', sans-serif;
-  --font-body: 'Inter', sans-serif;
+  --font-heading: 'Space Grotesk', 'Outfit', sans-serif;
+  --font-body: 'Outfit', 'Inter', sans-serif;
+  --font-display: 'Syne', sans-serif;
 
   --space-1: 4px;
   --space-2: 8px;
