@@ -78,7 +78,7 @@ export const ShopView = () => {
         </div>
 
         {/* Category Pills */}
-        <div className="flex gap-2 flex-wrap mb-6">
+        <div className="category-scroll-container mb-6">
           {categories.map((cat) => (
             <button
               key={cat.id}

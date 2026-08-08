@@ -25,10 +25,10 @@ export const Navbar = () => {
       <div className="container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         {/* Mobile Hamburger */}
         <button
-          className="nav-icon"
+          className="nav-icon mobile-hamburger"
           onClick={() => setIsMobileNavOpen(true)}
-          style={{ display: 'none' }}
           id="mobile-hamburger"
+          aria-label="Open Menu"
         >
           <Menu size={22} />
         </button>

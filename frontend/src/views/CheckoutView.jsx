@@ -401,7 +401,7 @@ export const CheckoutView = () => {
           </div>
         ) : (
           /* Checkout Layout: Forms + Order Summary */
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 360px', gap: '32px' }} id="checkout-layout-grid">
+          <div className="checkout-layout-grid" id="checkout-layout-grid">
             <div>
               {step === 1 && (
                 <div style={{ background: 'var(--bg-card)', padding: '32px', borderRadius: '12px', border: '1px solid var(--border)' }}>

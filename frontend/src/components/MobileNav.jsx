@@ -1,38 +1,75 @@
 import React from 'react';
 import { useStore } from '../context/StoreContext';
-import { X, ShieldAlert } from 'lucide-react';
+import { X, ShieldAlert, ChevronRight } from 'lucide-react';
 
 export const MobileNav = () => {
   const { isMobileNavOpen, setIsMobileNavOpen, navigateTo, setActiveCategory, isAdminLoggedIn } = useStore();
 
   if (!isMobileNavOpen) return null;
 
+  const handleNav = (page, category = null) => {
+    if (category) {
+      setActiveCategory(category);
+    }
+    navigateTo(page);
+    setIsMobileNavOpen(false);
+  };
+
   return (
     <>
       <div className="drawer-overlay" onClick={() => setIsMobileNavOpen(false)} />
-      <div className="drawer" style={{ left: 0, right: 'auto', transform: 'none', maxWidth: '300px' }}>
-        <div className="drawer__header">
-          <h3 className="navbar__logo">TEEVERSE</h3>
-          <button className="drawer__close" onClick={() => setIsMobileNavOpen(false)}>
+      <div className="drawer mobile-nav-drawer" style={{ left: 0, right: 'auto', transform: 'none', width: '85vw', maxWidth: '320px' }}>
+        <div className="drawer__header" style={{ padding: '20px 24px', borderBottom: '1px solid var(--border)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{ fontSize: '1.3rem', fontWeight: 900, letterSpacing: '0.15em', fontFamily: 'var(--font-display)', background: 'linear-gradient(135deg, #FFF 0%, #CDFF00 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+              TEEVERSE
+            </span>
+          </div>
+          <button className="drawer__close" onClick={() => setIsMobileNavOpen(false)} aria-label="Close menu">
             <X size={22} />
           </button>
         </div>
 
-        <div className="drawer__body">
-          <ul className="flex flex-col gap-4" style={{ fontSize: '1rem', textTransform: 'uppercase', fontFamily: 'var(--font-heading)' }}>
-            <li onClick={() => navigateTo('home')}>Home</li>
-            <li onClick={() => { setActiveCategory('all'); navigateTo('shop'); }}>Shop All</li>
-            <li onClick={() => { setActiveCategory('graphic'); navigateTo('shop'); }}>Graphic Tees</li>
-            <li onClick={() => { setActiveCategory('oversized'); navigateTo('shop'); }}>Oversized Tees</li>
-            <li onClick={() => { setActiveCategory('plain'); navigateTo('shop'); }}>Plain Tees</li>
-            <li onClick={() => { setActiveCategory('anime'); navigateTo('shop'); }}>Anime Collection</li>
-            <li onClick={() => { setActiveCategory('typography'); navigateTo('shop'); }}>Typography</li>
-            <li onClick={() => navigateTo('about')}>About Us</li>
-            <li onClick={() => navigateTo('contact')}>Contact Us</li>
+        <div className="drawer__body" style={{ padding: '24px' }}>
+          <ul className="flex flex-col gap-2" style={{ fontSize: '0.95rem', textTransform: 'uppercase', fontFamily: 'var(--font-heading)' }}>
+            <li className="mobile-nav-item" onClick={() => handleNav('home')}>
+              <span>Home</span> <ChevronRight size={16} opacity={0.5} />
+            </li>
+            <li className="mobile-nav-item" onClick={() => handleNav('shop', 'all')}>
+              <span>Shop All Collection</span> <ChevronRight size={16} opacity={0.5} />
+            </li>
+            <li className="mobile-nav-item" onClick={() => handleNav('shop', 'graphic')}>
+              <span>Graphic Tees</span> <ChevronRight size={16} opacity={0.5} />
+            </li>
+            <li className="mobile-nav-item" onClick={() => handleNav('shop', 'oversized')}>
+              <span>Oversized Fits 🔥</span> <ChevronRight size={16} opacity={0.5} />
+            </li>
+            <li className="mobile-nav-item" onClick={() => handleNav('shop', 'plain')}>
+              <span>Plain & Heavyweight</span> <ChevronRight size={16} opacity={0.5} />
+            </li>
+            <li className="mobile-nav-item" onClick={() => handleNav('shop', 'anime')}>
+              <span>Anime Tees</span> <ChevronRight size={16} opacity={0.5} />
+            </li>
+            <li className="mobile-nav-item" onClick={() => handleNav('shop', 'typography')}>
+              <span>Typography</span> <ChevronRight size={16} opacity={0.5} />
+            </li>
+            <li className="mobile-nav-item" onClick={() => handleNav('about')}>
+              <span>About Us</span> <ChevronRight size={16} opacity={0.5} />
+            </li>
+            <li className="mobile-nav-item" onClick={() => handleNav('contact')}>
+              <span>Contact & Support</span> <ChevronRight size={16} opacity={0.5} />
+            </li>
             
             {isAdminLoggedIn && (
-              <li onClick={() => navigateTo('admin')} style={{ color: 'var(--accent-primary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <ShieldAlert size={18} /> Owner Admin Panel
+              <li
+                className="mobile-nav-item"
+                onClick={() => handleNav('admin')}
+                style={{ color: 'var(--accent-primary)', marginTop: '12px', border: '1px solid rgba(205, 255, 0, 0.3)', borderRadius: '8px', padding: '12px 14px' }}
+              >
+                <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <ShieldAlert size={18} /> Owner Admin Panel
+                </span>
+                <ChevronRight size={16} />
               </li>
             )}
           </ul>

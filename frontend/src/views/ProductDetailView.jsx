@@ -68,7 +68,7 @@ export const ProductDetailView = () => {
           <span style={{ color: 'var(--text-primary)' }}>{product.name}</span>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '48px', marginBottom: '64px' }}>
+        <div className="product-detail-grid mb-6">
           {/* Multi-Image Interactive Gallery Area */}
           <div>
             {/* Main Image Display */}
