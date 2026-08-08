@@ -55,17 +55,33 @@ export const MobileNav = () => {
       <div className="drawer-overlay" onClick={() => setIsMobileNavOpen(false)} />
       <div className="drawer mobile-nav-drawer" style={{ left: 0, right: 'auto', width: '85vw', maxWidth: '340px' }}>
         {/* Header */}
-        <div className="drawer__header" style={{ padding: '20px 24px', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={{ fontSize: '1.35rem', fontWeight: 900, letterSpacing: '0.15em', fontFamily: 'var(--font-display)', background: 'linear-gradient(135deg, #FFF 0%, #CDFF00 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+        <div className="drawer__header" style={{ padding: '16px 18px', borderBottom: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', boxSizing: 'border-box' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 1, minWidth: 0 }}>
+            <span style={{ fontSize: '1.15rem', fontWeight: 900, letterSpacing: '0.12em', fontFamily: 'var(--font-display)', background: 'linear-gradient(135deg, #FFF 0%, #CDFF00 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', whiteSpace: 'nowrap' }}>
               TEEVERSE
             </span>
-            <span style={{ fontSize: '0.58rem', fontWeight: 800, padding: '2px 6px', borderRadius: '4px', background: 'rgba(205, 255, 0, 0.15)', color: 'var(--accent-primary)', border: '1px solid rgba(205, 255, 0, 0.3)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+            <span style={{ fontSize: '0.52rem', fontWeight: 800, padding: '2px 5px', borderRadius: '4px', background: 'rgba(205, 255, 0, 0.15)', color: 'var(--accent-primary)', border: '1px solid rgba(205, 255, 0, 0.3)', textTransform: 'uppercase', letterSpacing: '0.08em', whiteSpace: 'nowrap' }}>
               STREETWEAR
             </span>
           </div>
-          <button className="drawer__close nav-icon" onClick={() => setIsMobileNavOpen(false)} aria-label="Close menu" style={{ background: 'rgba(255,255,255,0.05)', borderRadius: '50%', padding: '6px' }}>
-            <X size={20} />
+          <button
+            className="drawer__close nav-icon"
+            onClick={() => setIsMobileNavOpen(false)}
+            aria-label="Close menu"
+            style={{
+              background: 'rgba(255,255,255,0.08)',
+              border: '1px solid rgba(255,255,255,0.12)',
+              borderRadius: '50%',
+              padding: '6px',
+              flexShrink: 0,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+              marginLeft: '8px',
+            }}
+          >
+            <X size={18} />
           </button>
         </div>
 
