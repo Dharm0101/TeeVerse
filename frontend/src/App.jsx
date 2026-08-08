@@ -3,6 +3,7 @@ import { StoreProvider, useStore } from './context/StoreContext';
 import { AnnouncementBar } from './components/AnnouncementBar';
 import { Navbar } from './components/Navbar';
 import { MobileNav } from './components/MobileNav';
+import { MobileBottomBar } from './components/MobileBottomBar';
 import { Footer } from './components/Footer';
 
 import { HomeView } from './views/HomeView';
@@ -86,6 +87,7 @@ export function App() {
       <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
         <Navbar />
         <MobileNav />
+        <MobileBottomBar />
 
         <div style={{ flex: 1 }}>
           <MainContent />
