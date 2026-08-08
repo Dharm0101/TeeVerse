@@ -20,11 +20,112 @@ export const AdminDashboardView = () => {
     navigateTo,
     setIsAuthModalOpen,
     showToast,
+    customAdminCustomers,
+    saveAdminCustomer,
+    deleteAdminCustomer,
   } = useStore();
 
-  const [adminTab, setAdminTab] = useState('orders'); // orders | products | queries
+  const [adminTab, setAdminTab] = useState('orders'); // orders | products | customers | queries
   const [upiIdSetting, setUpiIdSetting] = useState(() => localStorage.getItem('teeverse_store_upi_id') || '9558613440@paytm');
   const [customQrSetting, setCustomQrSetting] = useState(() => localStorage.getItem('teeverse_custom_qr_code') || null);
+
+  // Customer Management State
+  const [customerSearch, setCustomerSearch] = useState('');
+  const [customerFilter, setCustomerFilter] = useState('all');
+  const [showCustomerModal, setShowCustomerModal] = useState(false);
+  const [editingCustomer, setEditingCustomer] = useState(null);
+
+  // Compile unique customers dynamically from orders & customAdminCustomers
+  const customerMap = {};
+
+  orders.forEach((ord) => {
+    if (!ord.shipping) return;
+    const phone = (ord.shipping.phone || '').trim();
+    const email = (ord.shipping.email || '').trim().toLowerCase();
+    const key = phone || email || ord.shipping.name || 'cust-unk';
+
+    if (!customerMap[key]) {
+      customerMap[key] = {
+        key,
+        name: ord.shipping.name || 'Customer',
+        phone: ord.shipping.phone || '',
+        email: ord.shipping.email || '',
+        address: ord.shipping.address || '',
+        city: ord.shipping.city || '',
+        state: ord.shipping.state || 'Gujarat',
+        pincode: ord.shipping.pincode || '',
+        totalOrders: 0,
+        totalSpent: 0,
+        status: 'Active',
+        lastOrderDate: ord.date,
+        notes: '',
+      };
+    }
+
+    customerMap[key].totalOrders += 1;
+    customerMap[key].totalSpent += (ord.total || 0);
+    if (new Date(ord.date) > new Date(customerMap[key].lastOrderDate)) {
+      customerMap[key].lastOrderDate = ord.date;
+    }
+  });
+
+  if (customAdminCustomers) {
+    Object.keys(customAdminCustomers).forEach((key) => {
+      if (customerMap[key]) {
+        customerMap[key] = { ...customerMap[key], ...customAdminCustomers[key] };
+      } else {
+        customerMap[key] = {
+          key,
+          name: 'Customer',
+          phone: '',
+          email: '',
+          address: '',
+          city: '',
+          state: 'Gujarat',
+          pincode: '',
+          totalOrders: 0,
+          totalSpent: 0,
+          status: 'Active',
+          lastOrderDate: new Date().toISOString(),
+          notes: '',
+          ...customAdminCustomers[key],
+        };
+      }
+    });
+  }
+
+  // Initial seed customer if empty
+  if (Object.keys(customerMap).length === 0) {
+    customerMap['c-default'] = {
+      key: 'c-default',
+      name: 'Aarav Patel',
+      phone: '9558613440',
+      email: 'aarav.patel@gmail.com',
+      address: 'Near CG Road, Navrangpura',
+      city: 'Ahmedabad',
+      state: 'Gujarat',
+      pincode: '380009',
+      totalOrders: 2,
+      totalSpent: 1798,
+      status: 'VIP',
+      lastOrderDate: new Date().toISOString(),
+      notes: 'Loves oversized 240 GSM drop shoulder tees',
+    };
+  }
+
+  const allCustomers = Object.values(customerMap);
+
+  const filteredCustomers = allCustomers.filter((c) => {
+    const searchLower = customerSearch.toLowerCase().trim();
+    const matchesSearch =
+      !searchLower ||
+      (c.name && c.name.toLowerCase().includes(searchLower)) ||
+      (c.phone && c.phone.includes(searchLower)) ||
+      (c.email && c.email.toLowerCase().includes(searchLower)) ||
+      (c.city && c.city.toLowerCase().includes(searchLower));
+    const matchesFilter = customerFilter === 'all' || c.status === customerFilter;
+    return matchesSearch && matchesFilter;
+  });
 
   // CRUD Modal State
   const [showModal, setShowModal] = useState(false);
@@ -204,11 +305,20 @@ export const AdminDashboardView = () => {
               <h3 style={{ fontSize: '1.6rem' }}>{productsList.length}</h3>
             </div>
           </div>
+          <div className="admin-stat-card">
+            <div style={{ padding: '12px', background: 'rgba(168,85,247,0.1)', borderRadius: '10px', color: '#A855F7' }}>
+              <Users size={28} />
+            </div>
+            <div>
+              <div className="text-muted" style={{ fontSize: '0.75rem' }}>TOTAL CUSTOMERS</div>
+              <h3 style={{ fontSize: '1.6rem' }}>{allCustomers.length}</h3>
+            </div>
+          </div>
         </div>
 
         {/* Admin Navigation Tabs */}
         <div className="flex justify-between items-center mb-6 flex-wrap gap-4" style={{ borderBottom: '1px solid var(--border)', paddingBottom: '12px' }}>
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
             <button
               className={`category-pill ${adminTab === 'orders' ? 'active' : ''}`}
               onClick={() => setAdminTab('orders')}
@@ -220,6 +330,12 @@ export const AdminDashboardView = () => {
               onClick={() => setAdminTab('products')}
             >
               👕 Product Catalog CRUD ({productsList.length})
+            </button>
+            <button
+              className={`category-pill ${adminTab === 'customers' ? 'active' : ''}`}
+              onClick={() => setAdminTab('customers')}
+            >
+              👥 Manage Customers ({allCustomers.length})
             </button>
             <button
               className={`category-pill ${adminTab === 'queries' ? 'active' : ''}`}
@@ -574,6 +690,246 @@ export const AdminDashboardView = () => {
           </div>
         )}
 
+        {/* Tab 3: Customer Management */}
+        {adminTab === 'customers' && (
+          <div>
+            <div className="flex justify-between items-center mb-6 flex-wrap gap-4">
+              <div>
+                <h4 style={{ margin: 0, fontSize: '1.2rem', color: 'var(--accent-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  👥 CUSTOMER DATABASE ({filteredCustomers.length})
+                </h4>
+                <div className="text-muted" style={{ fontSize: '0.8rem', marginTop: '2px' }}>
+                  Manage customer profiles, order history, VIP statuses, and contact details.
+                </div>
+              </div>
+
+              <div className="flex gap-2 flex-wrap items-center">
+                {/* Search Bar */}
+                <div style={{ position: 'relative', width: '220px' }}>
+                  <input
+                    type="text"
+                    className="form-input"
+                    placeholder="Search name, phone, city..."
+                    style={{ paddingLeft: '32px', fontSize: '0.8rem', height: '38px' }}
+                    value={customerSearch}
+                    onChange={(e) => setCustomerSearch(e.target.value)}
+                  />
+                  <span style={{ position: 'absolute', left: '10px', top: '10px', color: 'var(--text-secondary)' }}>
+                    🔍
+                  </span>
+                </div>
+
+                {/* Status Filter */}
+                <select
+                  className="form-input"
+                  style={{ width: 'auto', fontSize: '0.8rem', height: '38px', padding: '0 10px' }}
+                  value={customerFilter}
+                  onChange={(e) => setCustomerFilter(e.target.value)}
+                >
+                  <option value="all">All Statuses</option>
+                  <option value="Active">🟢 Active Buyers</option>
+                  <option value="VIP">🌟 VIP Customers</option>
+                  <option value="Blocked">🚫 Blocked Users</option>
+                </select>
+
+                <button
+                  className="btn btn-primary btn-sm"
+                  style={{ height: '38px', padding: '0 16px' }}
+                  onClick={() => {
+                    setEditingCustomer({
+                      key: 'c-' + Date.now(),
+                      name: '',
+                      phone: '',
+                      email: '',
+                      address: '',
+                      city: '',
+                      state: 'Gujarat',
+                      pincode: '',
+                      status: 'Active',
+                      notes: '',
+                    });
+                    setShowCustomerModal(true);
+                  }}
+                >
+                  ➕ ADD CUSTOMER
+                </button>
+              </div>
+            </div>
+
+            {filteredCustomers.length === 0 ? (
+              <div style={{ background: 'var(--bg-card)', padding: '40px', textAlign: 'center', borderRadius: '12px', border: '1px solid var(--border)', color: 'var(--text-secondary)' }}>
+                No customer records match your filter criteria.
+              </div>
+            ) : (
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '16px' }}>
+                {filteredCustomers.map((cust) => (
+                  <div
+                    key={cust.key}
+                    style={{
+                      background: 'var(--bg-card)',
+                      border: '1px solid var(--border)',
+                      borderRadius: '12px',
+                      padding: '20px',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justify: 'space-between',
+                      position: 'relative',
+                    }}
+                  >
+                    <div>
+                      {/* Top Header */}
+                      <div className="flex justify-between items-start mb-3">
+                        <div className="flex items-center gap-3">
+                          <div
+                            style={{
+                              width: '44px',
+                              height: '44px',
+                              borderRadius: '50%',
+                              background: cust.status === 'VIP' ? 'linear-gradient(135deg, #FFD700, #FF8C00)' : 'linear-gradient(135deg, #CDFF00, #00E676)',
+                              color: '#000',
+                              fontWeight: '900',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              fontSize: '1.2rem',
+                              fontFamily: 'var(--font-heading)',
+                            }}
+                          >
+                            {cust.name ? cust.name.charAt(0).toUpperCase() : 'C'}
+                          </div>
+                          <div>
+                            <strong style={{ fontSize: '1.05rem', color: 'var(--text-primary)', display: 'block' }}>
+                              {cust.name || 'Unnamed Customer'}
+                            </strong>
+                            <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', marginTop: '2px' }}>
+                              📞 +91 {cust.phone || 'N/A'}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Status Badge */}
+                        <span
+                          style={{
+                            fontSize: '0.68rem',
+                            fontWeight: 'bold',
+                            padding: '3px 8px',
+                            borderRadius: '12px',
+                            background:
+                              cust.status === 'VIP'
+                                ? 'rgba(255, 215, 0, 0.2)'
+                                : cust.status === 'Blocked'
+                                ? 'rgba(255, 45, 45, 0.2)'
+                                : 'rgba(0, 230, 118, 0.15)',
+                            color:
+                              cust.status === 'VIP'
+                                ? '#FFD700'
+                                : cust.status === 'Blocked'
+                                ? '#FF2D2D'
+                                : 'var(--success)',
+                            border: `1px solid ${
+                              cust.status === 'VIP'
+                                ? 'rgba(255, 215, 0, 0.4)'
+                                : cust.status === 'Blocked'
+                                ? 'rgba(255, 45, 45, 0.4)'
+                                : 'rgba(0, 230, 118, 0.3)'
+                            }`,
+                          }}
+                        >
+                          {cust.status === 'VIP' ? '🌟 VIP' : cust.status === 'Blocked' ? '🚫 BLOCKED' : '🟢 ACTIVE'}
+                        </span>
+                      </div>
+
+                      {/* Contact & Location Info */}
+                      <div style={{ background: 'rgba(0,0,0,0.2)', padding: '12px', borderRadius: '8px', marginBottom: '14px', fontSize: '0.8rem', lineHeight: '1.5' }}>
+                        {cust.email && <div>📧 <strong>Email:</strong> {cust.email}</div>}
+                        {cust.address ? (
+                          <div style={{ marginTop: '2px' }}>
+                            📍 <strong>Address:</strong> {cust.address}, {cust.city}, {cust.state} - {cust.pincode}
+                          </div>
+                        ) : (
+                          <div style={{ marginTop: '2px', color: 'var(--text-secondary)' }}>📍 <strong>Location:</strong> {cust.city || 'Standard Location'}, {cust.state || 'India'}</div>
+                        )}
+                        {cust.notes && (
+                          <div style={{ marginTop: '6px', color: 'var(--accent-primary)', fontStyle: 'italic', borderTop: '1px dashed var(--border)', paddingTop: '4px' }}>
+                            📝 <strong>Note:</strong> "{cust.notes}"
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Stats */}
+                      <div className="flex justify-between items-center mb-3" style={{ fontSize: '0.82rem', background: 'rgba(255,255,255,0.02)', padding: '8px 12px', borderRadius: '6px' }}>
+                        <div>
+                          <span className="text-muted">Orders:</span> <strong>{cust.totalOrders} order(s)</strong>
+                        </div>
+                        <div>
+                          <span className="text-muted">Total Spent:</span> <strong style={{ color: 'var(--accent-primary)' }}>₹{cust.totalSpent.toLocaleString('en-IN')}</strong>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Action Bar */}
+                    <div className="flex gap-2 flex-wrap mt-2" style={{ borderTop: '1px solid var(--border)', paddingTop: '12px' }}>
+                      {cust.phone && (
+                        <a
+                          href={`https://wa.me/91${cust.phone.replace(/[^0-9]/g, '')}?text=Hi%20${encodeURIComponent(cust.name)},%20greetings%20from%20TeeVerse!`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="btn btn-secondary btn-sm"
+                          style={{ fontSize: '0.75rem', padding: '4px 10px', flex: 1, justifyContent: 'center' }}
+                        >
+                          💬 WhatsApp
+                        </a>
+                      )}
+                      {cust.email && (
+                        <a
+                          href={`mailto:${cust.email}?subject=TeeVerse Store Support`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="btn btn-secondary btn-sm"
+                          style={{ fontSize: '0.75rem', padding: '4px 10px' }}
+                        >
+                          ✉️ Email
+                        </a>
+                      )}
+                      <button
+                        className="btn btn-secondary btn-sm"
+                        style={{ fontSize: '0.75rem', padding: '4px 10px' }}
+                        onClick={() => {
+                          const nextStatus = cust.status === 'VIP' ? 'Active' : 'VIP';
+                          saveAdminCustomer(cust.key, { status: nextStatus });
+                        }}
+                      >
+                        {cust.status === 'VIP' ? 'Active' : '🌟 VIP'}
+                      </button>
+                      <button
+                        className="btn btn-secondary btn-sm"
+                        style={{ fontSize: '0.75rem', padding: '4px 10px' }}
+                        onClick={() => {
+                          setEditingCustomer(cust);
+                          setShowCustomerModal(true);
+                        }}
+                      >
+                        ✏️ Edit
+                      </button>
+                      <button
+                        className="btn btn-danger btn-sm"
+                        style={{ fontSize: '0.75rem', padding: '4px 8px' }}
+                        onClick={() => {
+                          if (window.confirm(`Delete customer record for "${cust.name}"?`)) {
+                            deleteAdminCustomer(cust.key);
+                          }
+                        }}
+                      >
+                        🗑️
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Modal: Create & Edit Product */}
         {showModal && (
           <div className="modal-overlay animate-fadeIn" style={{ display: 'flex' }}>
@@ -796,6 +1152,146 @@ export const AdminDashboardView = () => {
                   </button>
                   <button type="submit" className="btn btn-primary">
                     {editingProduct ? 'UPDATE PRODUCT' : 'CREATE PRODUCT'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* Modal: Create & Edit Customer */}
+        {showCustomerModal && editingCustomer && (
+          <div className="modal-overlay animate-fadeIn" style={{ display: 'flex' }}>
+            <div className="modal-content animate-scaleIn" style={{ maxWidth: '520px', width: '100%', padding: '28px' }}>
+              <div className="flex justify-between items-center mb-4">
+                <h3 style={{ margin: 0, fontSize: '1.3rem', color: 'var(--accent-primary)' }}>
+                  👤 {editingCustomer.name ? `EDIT CUSTOMER: ${editingCustomer.name}` : 'ADD NEW CUSTOMER'}
+                </h3>
+                <button
+                  onClick={() => setShowCustomerModal(false)}
+                  style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer' }}
+                >
+                  <X size={22} />
+                </button>
+              </div>
+
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  saveAdminCustomer(editingCustomer.key, editingCustomer);
+                  setShowCustomerModal(false);
+                }}
+              >
+                <div className="form-group mb-3">
+                  <label className="form-label">Customer Name *</label>
+                  <input
+                    type="text"
+                    className="form-input"
+                    placeholder="e.g. Aarav Patel"
+                    value={editingCustomer.name || ''}
+                    onChange={(e) => setEditingCustomer({ ...editingCustomer, name: e.target.value })}
+                    required
+                  />
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }} className="mb-3">
+                  <div className="form-group">
+                    <label className="form-label">Phone Number *</label>
+                    <input
+                      type="text"
+                      className="form-input"
+                      placeholder="9558613440"
+                      value={editingCustomer.phone || ''}
+                      onChange={(e) => setEditingCustomer({ ...editingCustomer, phone: e.target.value })}
+                      required
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Customer Status</label>
+                    <select
+                      className="form-input"
+                      value={editingCustomer.status || 'Active'}
+                      onChange={(e) => setEditingCustomer({ ...editingCustomer, status: e.target.value })}
+                    >
+                      <option value="Active">🟢 Active Buyer</option>
+                      <option value="VIP">🌟 VIP Customer</option>
+                      <option value="Blocked">🚫 Blocked User</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="form-group mb-3">
+                  <label className="form-label">Email Address</label>
+                  <input
+                    type="email"
+                    className="form-input"
+                    placeholder="customer@gmail.com"
+                    value={editingCustomer.email || ''}
+                    onChange={(e) => setEditingCustomer({ ...editingCustomer, email: e.target.value })}
+                  />
+                </div>
+
+                <div className="form-group mb-3">
+                  <label className="form-label">Delivery Address</label>
+                  <textarea
+                    className="form-input"
+                    rows={2}
+                    placeholder="House/Street address..."
+                    value={editingCustomer.address || ''}
+                    onChange={(e) => setEditingCustomer({ ...editingCustomer, address: e.target.value })}
+                  />
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px' }} className="mb-3">
+                  <div className="form-group">
+                    <label className="form-label">City</label>
+                    <input
+                      type="text"
+                      className="form-input"
+                      placeholder="Ahmedabad"
+                      value={editingCustomer.city || ''}
+                      onChange={(e) => setEditingCustomer({ ...editingCustomer, city: e.target.value })}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">State</label>
+                    <input
+                      type="text"
+                      className="form-input"
+                      placeholder="Gujarat"
+                      value={editingCustomer.state || 'Gujarat'}
+                      onChange={(e) => setEditingCustomer({ ...editingCustomer, state: e.target.value })}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Pincode</label>
+                    <input
+                      type="text"
+                      className="form-input"
+                      placeholder="380009"
+                      value={editingCustomer.pincode || ''}
+                      onChange={(e) => setEditingCustomer({ ...editingCustomer, pincode: e.target.value })}
+                    />
+                  </div>
+                </div>
+
+                <div className="form-group mb-4">
+                  <label className="form-label">Internal Merchant Note</label>
+                  <textarea
+                    className="form-input"
+                    rows={2}
+                    placeholder="e.g. Prefers 240 GSM Oversized Tees..."
+                    value={editingCustomer.notes || ''}
+                    onChange={(e) => setEditingCustomer({ ...editingCustomer, notes: e.target.value })}
+                  />
+                </div>
+
+                <div className="flex gap-3 justify-end">
+                  <button type="button" className="btn btn-ghost" onClick={() => setShowCustomerModal(false)}>
+                    CANCEL
+                  </button>
+                  <button type="submit" className="btn btn-primary">
+                    SAVE CUSTOMER RECORD
                   </button>
                 </div>
               </form>

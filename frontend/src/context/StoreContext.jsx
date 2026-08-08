@@ -135,6 +135,40 @@ export const StoreProvider = ({ children }) => {
     localStorage.setItem('teeverse_contact_queries', JSON.stringify(contactQueries));
   }, [contactQueries]);
 
+  // Admin Managed Customers State
+  const [customAdminCustomers, setCustomAdminCustomers] = useState(() => {
+    const saved = localStorage.getItem('teeverse_admin_customers');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        return {};
+      }
+    }
+    return {};
+  });
+
+  useEffect(() => {
+    localStorage.setItem('teeverse_admin_customers', JSON.stringify(customAdminCustomers));
+  }, [customAdminCustomers]);
+
+  const saveAdminCustomer = (customerKey, customerData) => {
+    setCustomAdminCustomers((prev) => ({
+      ...prev,
+      [customerKey]: { ...(prev[customerKey] || {}), ...customerData },
+    }));
+    showToast('Customer record updated successfully! 👤', 'success');
+  };
+
+  const deleteAdminCustomer = (customerKey) => {
+    setCustomAdminCustomers((prev) => {
+      const copy = { ...prev };
+      delete copy[customerKey];
+      return copy;
+    });
+    showToast('Customer record removed', 'info');
+  };
+
   useEffect(() => {
     const fetchBackendOrders = async () => {
       try {
@@ -567,6 +601,9 @@ export const StoreProvider = ({ children }) => {
         addContactQuery,
         updateQueryStatus,
         deleteContactQuery,
+        customAdminCustomers,
+        saveAdminCustomer,
+        deleteAdminCustomer,
       }}
     >
       {children}
