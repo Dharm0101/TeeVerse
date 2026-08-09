@@ -648,7 +648,7 @@ export const CheckoutView = () => {
                         </div>
                       </div>
                       <span className="text-accent" style={{ fontWeight: 'bold' }}>
-                        {totals.shipping === 0 ? 'FREE' : '₹69'}
+                        {totals.shipping === 0 ? 'FREE' : `₹${totals.shipping}`}
                       </span>
                     </div>
                   </div>

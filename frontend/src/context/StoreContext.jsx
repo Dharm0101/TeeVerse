@@ -413,7 +413,7 @@ export const StoreProvider = ({ children }) => {
     const igst = 0;
     const totalTax = 0;
 
-    const baseShipping = subtotal >= 799 || subtotal === 0 ? 0 : 69;
+    const baseShipping = subtotal >= 799 || subtotal === 0 ? 0 : 150;
     const outOfStateFee = isOutsideGujarat ? 99 : 0;
     const shipping = baseShipping + outOfStateFee;
 
