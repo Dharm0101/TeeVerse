@@ -407,22 +407,11 @@ export const StoreProvider = ({ children }) => {
     const taxableAmount = Math.max(0, subtotal - discountAmount);
     const isOutsideGujarat = Boolean(shippingState && shippingState.trim().toLowerCase() !== 'gujarat');
 
-    // GST Calculations
-    let cgst = 0;
-    let sgst = 0;
-    let igst = 0;
-    let totalTax = 0;
-
-    if (isOutsideGujarat) {
-      // Outside Gujarat -> IGST 5%
-      igst = Math.round(taxableAmount * 0.05);
-      totalTax = igst;
-    } else {
-      // Same State Gujarat -> CGST 2.5% + SGST 2.5%
-      cgst = Math.round(taxableAmount * 0.025);
-      sgst = Math.round(taxableAmount * 0.025);
-      totalTax = cgst + sgst;
-    }
+    // GST Calculations (GST removed - 0% Tax)
+    const cgst = 0;
+    const sgst = 0;
+    const igst = 0;
+    const totalTax = 0;
 
     const baseShipping = subtotal >= 799 || subtotal === 0 ? 0 : 69;
     const outOfStateFee = isOutsideGujarat ? 99 : 0;

@@ -78,7 +78,7 @@ export const CheckoutView = () => {
   const totals = getCartTotals(formData.state);
   const extraExpressFee = deliveryOption === 'express' ? 149 : 0;
   const finalShipping = totals.shipping + extraExpressFee;
-  const grandTotal = totals.subtotal - totals.discountAmount + totals.totalTax + finalShipping;
+  const grandTotal = totals.subtotal - totals.discountAmount + finalShipping;
 
   // 4-Minute Timer Effect
   useEffect(() => {
@@ -961,24 +961,7 @@ export const CheckoutView = () => {
                 <div className="flex justify-between mb-1"><span>Subtotal:</span><span>₹{totals.subtotal.toLocaleString('en-IN')}</span></div>
                 {totals.discountAmount > 0 && <div className="flex justify-between mb-1" style={{ color: 'var(--success)' }}><span>Discount:</span><span>-₹{totals.discountAmount.toLocaleString('en-IN')}</span></div>}
                 
-                {/* GST / IGST Tax Breakdown */}
-                {totals.isOutsideGujarat ? (
-                  <div className="flex justify-between mb-1 text-muted">
-                    <span>IGST (5%):</span>
-                    <span>₹{totals.igst.toLocaleString('en-IN')}</span>
-                  </div>
-                ) : (
-                  <>
-                    <div className="flex justify-between mb-1 text-muted">
-                      <span>CGST (2.5%):</span>
-                      <span>₹{totals.cgst.toLocaleString('en-IN')}</span>
-                    </div>
-                    <div className="flex justify-between mb-1 text-muted">
-                      <span>SGST (2.5%):</span>
-                      <span>₹{totals.sgst.toLocaleString('en-IN')}</span>
-                    </div>
-                  </>
-                )}
+
 
                 <div className="flex justify-between mb-1">
                   <span>Shipping:</span>

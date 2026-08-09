@@ -25,10 +25,7 @@ export async function sendNewOrderEmailToOwner(order) {
 
   const senderUser = process.env.SMTP_USER || OWNER_EMAIL;
 
-  const isOutsideGujarat = order.shipping && order.shipping.state && order.shipping.state.trim().toLowerCase() !== 'gujarat';
-  const taxSummary = isOutsideGujarat
-    ? `Tax Rule: IGST 5% (Interstate delivery to ${order.shipping.state})`
-    : `Tax Rule: CGST 2.5% + SGST 2.5% (Same State Gujarat)`;
+  const taxSummary = 'No GST Charged (0%)';
 
   const hasProof = !!order.paymentScreenshot;
 

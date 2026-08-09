@@ -164,10 +164,7 @@ export const CartDrawer = () => {
                   <span>-₹{totals.discountAmount.toLocaleString('en-IN')}</span>
                 </div>
               )}
-              <div className="flex justify-between mb-1 text-muted">
-                <span>Taxes (CGST 2.5% + SGST 2.5%):</span>
-                <span>+₹{totals.totalTax.toLocaleString('en-IN')}</span>
-              </div>
+
               <div className="flex justify-between mb-1">
                 <span className="text-muted">Shipping:</span>
                 <span>{totals.shipping === 0 ? <strong style={{ color: 'var(--success)' }}>FREE</strong> : `₹${totals.shipping}`}</span>
