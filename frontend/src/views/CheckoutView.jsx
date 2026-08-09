@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useStore } from '../context/StoreContext';
 import { indianStates, pincodeData } from '../data/mockData';
 import { API_BASE_URL, emailService } from '../services/emailService';
-import { CheckCircle2, ShieldCheck, Truck, CreditCard, QrCode, Mail, Clock, RefreshCw, Copy, Check, Plus, MapPin } from 'lucide-react';
+import { CheckCircle2, ShieldCheck, Truck, CreditCard, QrCode, Mail, Clock, RefreshCw, Copy, Check, Plus, MapPin, Trash2 } from 'lucide-react';
 
 const STORE_UPI_ID = localStorage.getItem('teeverse_store_upi_id') || '9558613440@paytm';
 const CUSTOM_QR_IMAGE = localStorage.getItem('teeverse_custom_qr_code') || null;
@@ -16,6 +16,7 @@ export const CheckoutView = () => {
     showToast,
     savedAddresses,
     addSavedAddress,
+    removeSavedAddress,
     clearCart,
   } = useStore();
 
@@ -61,6 +62,22 @@ export const CheckoutView = () => {
       setIsAddingNewAddr(true);
     }
   }, [selectedAddressId, savedAddresses]);
+
+  const handleRemoveAddress = (e, addrId) => {
+    e.stopPropagation();
+    removeSavedAddress(addrId);
+    if (selectedAddressId === addrId) {
+      const remaining = savedAddresses.filter((a) => a.id !== addrId);
+      if (remaining.length > 0) {
+        const nextDef = remaining.find((a) => a.isDefault) || remaining[0];
+        setSelectedAddressId(nextDef.id);
+      } else {
+        setSelectedAddressId('new');
+        setIsAddingNewAddr(true);
+        setFormData({ name: '', phone: '', email: '', address: '', pincode: '', city: '', state: 'Gujarat' });
+      }
+    }
+  };
 
   const [deliveryOption, setDeliveryOption] = useState('standard'); // standard | express
   const [paymentMethod, setPaymentMethod] = useState('upi'); // upi | card | netbanking
@@ -454,16 +471,38 @@ export const CheckoutView = () => {
                                   style={{ marginTop: '4px' }}
                                 />
                                 <div style={{ flex: 1 }}>
-                                  <div className="flex items-center gap-2 mb-1">
-                                    <strong style={{ fontSize: '0.95rem' }}>{addr.name}</strong>
-                                    <span className="category-pill" style={{ fontSize: '0.7rem', padding: '2px 8px' }}>
-                                      {addr.tag}
-                                    </span>
-                                    {addr.isDefault && (
-                                      <span style={{ fontSize: '0.7rem', color: 'var(--accent-primary)', fontWeight: 'bold' }}>
-                                        ✓ Default
+                                  <div className="flex items-center gap-2 mb-1 justify-between">
+                                    <div className="flex items-center gap-2">
+                                      <strong style={{ fontSize: '0.95rem' }}>{addr.name}</strong>
+                                      <span className="category-pill" style={{ fontSize: '0.7rem', padding: '2px 8px' }}>
+                                        {addr.tag}
                                       </span>
-                                    )}
+                                      {addr.isDefault && (
+                                        <span style={{ fontSize: '0.7rem', color: 'var(--accent-primary)', fontWeight: 'bold' }}>
+                                          ✓ Default
+                                        </span>
+                                      )}
+                                    </div>
+                                    <button
+                                      type="button"
+                                      title="Remove address"
+                                      style={{
+                                        background: 'transparent',
+                                        border: 'none',
+                                        color: '#ff4d4d',
+                                        cursor: 'pointer',
+                                        padding: '4px 8px',
+                                        borderRadius: '4px',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '4px',
+                                        fontSize: '0.75rem',
+                                        fontWeight: 'bold',
+                                      }}
+                                      onClick={(e) => handleRemoveAddress(e, addr.id)}
+                                    >
+                                      <Trash2 size={13} /> Remove
+                                    </button>
                                   </div>
                                   <div className="text-muted" style={{ fontSize: '0.85rem' }}>
                                     {addr.address}, {addr.city}, {addr.state} - {addr.pincode}
