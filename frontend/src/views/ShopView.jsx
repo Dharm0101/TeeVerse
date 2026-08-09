@@ -5,6 +5,7 @@ import { ProductCard } from '../components/ProductCard';
 import { Filter, RotateCcw } from 'lucide-react';
 
 export const ShopView = () => {
+  const [isMobileFilterOpen, setIsMobileFilterOpen] = React.useState(false);
   const {
     productsList,
     activeCategory,
@@ -62,6 +63,14 @@ export const ShopView = () => {
           </div>
 
           <div className="flex items-center gap-3">
+            <button
+              className="btn btn-secondary btn-sm mobile-filter-toggle"
+              onClick={() => setIsMobileFilterOpen(!isMobileFilterOpen)}
+              style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem' }}
+            >
+              <Filter size={16} /> Filters {isMobileFilterOpen ? '▲' : '▼'}
+            </button>
+
             <span className="text-muted" style={{ fontSize: '0.85rem' }}>Sort By:</span>
             <select
               className="form-input"
@@ -91,9 +100,9 @@ export const ShopView = () => {
         </div>
 
         {/* Main Grid + Sidebar */}
-        <div style={{ display: 'grid', gridTemplateColumns: '260px 1fr', gap: '32px' }} id="shop-layout-grid">
+        <div className="shop-layout-grid" id="shop-layout-grid">
           {/* Filter Sidebar */}
-          <aside style={{ background: 'var(--bg-card)', padding: '24px', borderRadius: '12px', border: '1px solid var(--border)', height: 'fit-content' }}>
+          <aside className={`shop-filter-sidebar ${isMobileFilterOpen ? 'open' : ''}`} style={{ background: 'var(--bg-card)', padding: '24px', borderRadius: '12px', border: '1px solid var(--border)', height: 'fit-content' }}>
             <div className="flex justify-between items-center mb-4" style={{ borderBottom: '1px solid var(--border)', paddingBottom: '12px' }}>
               <div className="flex items-center gap-2" style={{ fontWeight: 'bold', fontFamily: 'var(--font-heading)', letterSpacing: '1px' }}>
                 <Filter size={18} className="text-accent" /> FILTERS

@@ -57,7 +57,7 @@ export const ContactView = () => {
           </p>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.3fr', gap: '36px' }} id="contact-grid">
+        <div className="contact-grid" id="contact-grid">
           {/* Contact Details Card */}
           <div className="scroll-reveal-left">
             <div
