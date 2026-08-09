@@ -241,7 +241,19 @@ export const StoreProvider = ({ children }) => {
     const saved = localStorage.getItem('teeverse_addresses');
     if (saved) {
       try {
-        return JSON.parse(saved);
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) {
+          // Clean out legacy demo/mock addresses
+          const cleaned = parsed.filter(
+            (a) =>
+              !a.name?.toLowerCase().includes('rahul sharma') &&
+              !a.address?.toLowerCase().includes('sunset heights') &&
+              !a.address?.toLowerCase().includes('cyber city')
+          );
+          localStorage.setItem('teeverse_addresses', JSON.stringify(cleaned));
+          return cleaned;
+        }
+        return [];
       } catch (e) {
         return [];
       }

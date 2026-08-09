@@ -559,7 +559,7 @@ export const CheckoutView = () => {
                       <input
                         type="text"
                         className="form-input"
-                        placeholder="e.g. Rahul Verma"
+                        placeholder="e.g. Full Name"
                         value={formData.name}
                         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                         required
@@ -584,7 +584,7 @@ export const CheckoutView = () => {
                         <input
                           type="email"
                           className="form-input"
-                          placeholder="rahul@gmail.com"
+                          placeholder="your.email@example.com"
                           value={formData.email}
                           onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                           required
